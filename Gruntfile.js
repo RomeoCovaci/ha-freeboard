@@ -25,6 +25,12 @@ module.exports = function(grunt) {
                 ],
                 dest : 'js/freeboard.thirdparty.js'
             },
+            homeassistant : {
+                src : [
+					'plugins/homeassistant/*.js'
+				],
+                dest : 'js/freeboard.homeassistant.js'
+            },
 			fb : {
 				src : [
 					'lib/js/freeboard/DatasourceModel.js',
@@ -82,6 +88,16 @@ module.exports = function(grunt) {
                     'js/freeboard.thirdparty.min.js' : [ 'js/freeboard.thirdparty.js' ]
                 }
             },
+            homeassistant :{
+                options: {
+                    mangle : false,
+                    beautify : false,
+                    compress: {}
+                },
+                files: {
+                    'js/freeboard.homeassistant.min.js' : [ 'plugins/homeassistant/haws-datasource.plugin.js' ]
+                }
+            },
             'fb_plugins': {
                 files: {
                     'js/freeboard_plugins.min.js' : [ 'js/freeboard_plugins.js' ]
@@ -108,5 +124,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-string-replace');
-    grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb_plugins', 'uglify:fb', 'uglify:plugins', 'uglify:fb_plugins', 'uglify:thirdparty', 'string-replace:css' ]);
+    grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb_plugins', 'concat:homeassistant', 'uglify:fb', 'uglify:plugins', 'uglify:fb_plugins', 'uglify:thirdparty', 'uglify:homeassistant', 'string-replace:css' ]);
 };
