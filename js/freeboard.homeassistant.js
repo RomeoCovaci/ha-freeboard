@@ -54,7 +54,6 @@
       var currentSettings = settings;
 
       function updateEntityState(entity_id, state, attributes) {
-        console.log(e);
         self.haData[entity_id] = state;
         self.haData[entity_id + "_attrs"] = attributes;
       }
