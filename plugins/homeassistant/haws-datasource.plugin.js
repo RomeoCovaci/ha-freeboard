@@ -22,7 +22,8 @@
 //
 // Entities are available in the data source by their entity ID.
 // Their attributes are available by "_attrs" appended to the entity_id.
-//
+// The state value is available in the attrs as well under "state".
+
 (function()
 {
     freeboard.loadDatasourcePlugin({
@@ -55,6 +56,7 @@
 
       function updateEntityState(entity_id, state, attributes) {
         self.haData[entity_id] = state;
+        attributes.state = state;
         self.haData[entity_id + "_attrs"] = attributes;
       }
 
@@ -73,7 +75,6 @@
             updateEntityState(e.data.entity_id, e.data.new_state.state, e.data.new_state.attributes);
             updateCallback(self.haData);
           }, "state_changed").then(function(cancelSub) {
-            console.log("cancelsub", cancelSub);
             self.cancelSubsription = cancelSub;
           });
 	}, function (err) {
@@ -89,7 +90,7 @@
 
 	var newData = {};
 	self.conn.getStates().then(function(entities) {
-          console.log(entities);
+          //console.log(entities);
 	  Object.keys(entities).sort().map(
 	    function(key) {
               updateEntityState(entities[key].entity_id, entities[key].state, entities[key].attributes);
