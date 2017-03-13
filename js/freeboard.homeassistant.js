@@ -73,7 +73,6 @@
             updateEntityState(e.data.entity_id, e.data.new_state.state, e.data.new_state.attributes);
             updateCallback(self.haData);
           }, "state_changed").then(function(cancelSub) {
-            console.log("cancelsub", cancelSub);
             self.cancelSubsription = cancelSub;
           });
 	}, function (err) {
@@ -89,7 +88,7 @@
 
 	var newData = {};
 	self.conn.getStates().then(function(entities) {
-          console.log(entities);
+          //console.log(entities);
 	  Object.keys(entities).sort().map(
 	    function(key) {
               updateEntityState(entities[key].entity_id, entities[key].state, entities[key].attributes);
