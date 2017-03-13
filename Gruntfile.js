@@ -19,7 +19,7 @@ module.exports = function(grunt) {
                         'lib/js/thirdparty/underscore.js',
                         'lib/js/thirdparty/jquery.gridster.js',
                         'lib/js/thirdparty/jquery.caret.js',
-						'lib/js/thirdparty/jquery.xdomainrequest.js',
+			'lib/js/thirdparty/jquery.xdomainrequest.js',
                         'lib/js/thirdparty/codemirror.js',
                     ]
                 ],
@@ -27,8 +27,8 @@ module.exports = function(grunt) {
             },
             homeassistant : {
                 src : [
-					'plugins/homeassistant/*.js'
-				],
+			'plugins/homeassistant/*.js'
+		],
                 dest : 'js/freeboard.homeassistant.js'
             },
 			fb : {
@@ -49,7 +49,8 @@ module.exports = function(grunt) {
 			},
             plugins : {
                 src : [
-                    'plugins/freeboard/*.js'
+                    'plugins/freeboard/*.js',
+		    'plugins/thirdparty/*.plugin.js'
                 ],
                 dest : 'js/freeboard.plugins.js'
             },
