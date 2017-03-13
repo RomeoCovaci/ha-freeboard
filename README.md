@@ -1,3 +1,16 @@
+freeboard (with Home Assistant datasource)
+============
+
+This repository contains a clone of [freeboard](https://github.com/freeboard/freeboard) along with a Home Assistant datasource based on the [WebSocket-based JS API](https://github.com/home-assistant/home-assistant-js-websocket).  It also includes a few additional freeboard plugins, such as the Handlebars templating plugin for easy custom widget creation.
+
+To get started, just fire up a web browser in the root of this dir and open up index.html (or index-dev.html).  Add a Home Assistant datasource with appropriate Web Socket URI, then add some widgets.  Each entity will be available with its state as the data value.  Additionally, each entity's attributes are available with "_attrs" added to the entity name, so that the full attributes can be accessed in Freeboard.
+
+More to come soon.
+
+
+== Original freeboard README.md follows ==
+
+
 freeboard
 ==========
 
