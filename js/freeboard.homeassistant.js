@@ -19,7 +19,10 @@
 // SOFTWARE.
 
 // Freeboard Home Assistant datasource
-
+//
+// Entities are available in the data source by their entity ID.
+// Their attributes are available by "_attrs" appended to the entity_id.
+//
 (function()
 {
     freeboard.loadDatasourcePlugin({
@@ -34,8 +37,7 @@
 		"name"         : "hass_ws_url",
 		"display_name" : "Home Assistant WS URL",
 		"type"         : "text",
-		//"default_value": "ws://127.0.0.1:8123/api/websocket",
-		"default_value": "ws://hass.wuffhouse.ca:8123/api/websocket",
+		"default_value": "ws://127.0.0.1:8123/api/websocket",
 		"description"  : "The URL to the Home Assistant instance WebSocket API.",
                 "required"     : true
 	    }
@@ -51,6 +53,12 @@
       var self = this;
       var currentSettings = settings;
 
+      function updateEntityState(entity_id, state, attributes) {
+        console.log(e);
+        self.haData[entity_id] = state;
+        self.haData[entity_id + "_attrs"] = attributes;
+      }
+
       function doConnection() {
 	self.haData = {};
 
@@ -63,8 +71,7 @@
 
           // then subscribe to change events
           conn.subscribeEvents(function(e) {
-            console.log(e);
-            self.haData[e.data.entity_id] = e.data.new_state.state;
+            updateEntityState(e.data.entity_id, e.data.new_state.state, e.data.new_state.attributes);
             updateCallback(self.haData);
           }, "state_changed").then(function(cancelSub) {
             console.log("cancelsub", cancelSub);
@@ -83,9 +90,10 @@
 
 	var newData = {};
 	self.conn.getStates().then(function(entities) {
+          console.log(entities);
 	  Object.keys(entities).sort().map(
 	    function(key) {
-	      newData[entities[key].entity_id] = entities[key].state;
+              updateEntityState(entities[key].entity_id, entities[key].state, entities[key].attributes);
 	    });
 	  }, function(err) {
 	     console.log("getStates() failed - " + err);
