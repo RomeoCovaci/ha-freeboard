@@ -22,7 +22,8 @@
 //
 // Entities are available in the data source by their entity ID.
 // Their attributes are available by "_attrs" appended to the entity_id.
-//
+// The state value is available in the attrs as well under "state".
+
 (function()
 {
     freeboard.loadDatasourcePlugin({
@@ -40,7 +41,15 @@
 		"default_value": "ws://127.0.0.1:8123/api/websocket",
 		"description"  : "The URL to the Home Assistant instance WebSocket API.",
                 "required"     : true
-	    }
+	    },
+            {
+		"name"         : "hass_api_key",
+		"display_name" : "Home Assistant Auth Token",
+		"type"         : "text",
+		"default_value": "",
+		"description"  : "Home Assistant API authentication token. (Optional)",
+                "required"     : false
+            }              
 	],
 	newInstance: function(settings, newInstanceCallback, updateCallback)
 	{
@@ -53,25 +62,21 @@
       var self = this;
       var currentSettings = settings;
 
-      function updateEntityState(entity_id, state, attributes) {
-        self.haData[entity_id] = state;
-        self.haData[entity_id + "_attrs"] = attributes;
-      }
-
       function doConnection() {
-	self.haData = {};
+        var opts = {};
+        if (currentSettings.hass_api_key) {
+          opts["authToken"] = currentSettings.hass_api_key;
+        }
 
         console.log("HAWS datasource - connecting to " + currentSettings.hass_ws_url);
-	HAWS.createConnection(currentSettings.hass_ws_url).then(function (conn) {
+	HAWS.createConnection(currentSettings.hass_ws_url, opts).then(function (conn) {
 	  self.conn = conn;
 
-          // on connection, get all data
-          getAllData();
-
-          // then subscribe to change events
-          conn.subscribeEvents(function(e) {
-            updateEntityState(e.data.entity_id, e.data.new_state.state, e.data.new_state.attributes);
-            updateCallback(self.haData);
+          // start getting entities
+          HAWS.subscribeEntities(conn, function(ents) {
+            // if we need to transform the data we can do so here; but for now,
+            // we just pass the entities object straight to freeboard
+            updateCallback(ents);
           }, "state_changed").then(function(cancelSub) {
             self.cancelSubsription = cancelSub;
           });
@@ -81,28 +86,10 @@
         );
       }
 
-      function getAllData() {
-	if (!self.conn) {
-	  return;
-	}
-
-	var newData = {};
-	self.conn.getStates().then(function(entities) {
-          //console.log(entities);
-	  Object.keys(entities).sort().map(
-	    function(key) {
-              updateEntityState(entities[key].entity_id, entities[key].state, entities[key].attributes);
-	    });
-	  }, function(err) {
-	     console.log("getStates() failed - " + err);
-	  });
-
-        self.haData = newData;
-	updateCallback(self.haData);
-      }
-
       self.onSettingsChanged = function(newSettings) {
-        if (newSettings.hass_ws_url != currentSettings.hass_ws_url) {
+        if (newSettings.hass_ws_url != currentSettings.hass_ws_url ||
+            newSettings.hass_api_key != currentSettings.hass_api_key)
+        {
           if (self.conn) {
             self.conn.close();
           }
@@ -112,7 +99,7 @@
       }
 
       self.updateNow = function() {
-	getAllData();
+        // nothing we can do
       }
 
       self.onDispose = function() {
