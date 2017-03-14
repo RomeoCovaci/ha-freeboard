@@ -25,28 +25,32 @@ module.exports = function(grunt) {
                 ],
                 dest : 'js/freeboard.thirdparty.js'
             },
+            haws : {
+                src : [ 'node_modules/home-assistant-js-websocket/dist/haws.umd.js' ],
+                dest: 'js/haws.umd.js'
+            },
             homeassistant : {
                 src : [
-			'plugins/homeassistant/*.js'
-		],
+                    'plugins/homeassistant/*.js'
+                ],
                 dest : 'js/freeboard.homeassistant.js'
             },
-			fb : {
-				src : [
-					'lib/js/freeboard/DatasourceModel.js',
-					'lib/js/freeboard/DeveloperConsole.js',
-					'lib/js/freeboard/DialogBox.js',
-					'lib/js/freeboard/FreeboardModel.js',
-					'lib/js/freeboard/FreeboardUI.js',
-					'lib/js/freeboard/JSEditor.js',
-					'lib/js/freeboard/PaneModel.js',
-					'lib/js/freeboard/PluginEditor.js',
-					'lib/js/freeboard/ValueEditor.js',
-					'lib/js/freeboard/WidgetModel.js',
-					'lib/js/freeboard/freeboard.js',
-				],
-				dest : 'js/freeboard.js'
-			},
+            fb : {
+                src : [
+                    'lib/js/freeboard/DatasourceModel.js',
+                    'lib/js/freeboard/DeveloperConsole.js',
+                    'lib/js/freeboard/DialogBox.js',
+                    'lib/js/freeboard/FreeboardModel.js',
+                    'lib/js/freeboard/FreeboardUI.js',
+                    'lib/js/freeboard/JSEditor.js',
+                    'lib/js/freeboard/PaneModel.js',
+                    'lib/js/freeboard/PluginEditor.js',
+                    'lib/js/freeboard/ValueEditor.js',
+                    'lib/js/freeboard/WidgetModel.js',
+                    'lib/js/freeboard/freeboard.js',
+                ],
+                dest : 'js/freeboard.js'
+            },
             plugins : {
                 src : [
                     'plugins/freeboard/*.js',
@@ -96,7 +100,7 @@ module.exports = function(grunt) {
                     compress: {}
                 },
                 files: {
-                    'js/freeboard.homeassistant.min.js' : [ 'plugins/homeassistant/haws-datasource.plugin.js' ]
+                    'js/freeboard.homeassistant.min.js' : [ 'js/freeboard.homeassistant.js' ]
                 }
             },
             'fb_plugins': {
@@ -125,5 +129,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-string-replace');
-    grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb_plugins', 'concat:homeassistant', 'uglify:fb', 'uglify:plugins', 'uglify:fb_plugins', 'uglify:thirdparty', 'uglify:homeassistant', 'string-replace:css' ]);
+    grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb_plugins', 'concat:haws', 'concat:homeassistant', 'uglify:fb', 'uglify:plugins', 'uglify:fb_plugins', 'uglify:thirdparty', 'uglify:homeassistant', 'string-replace:css' ]);
 };
