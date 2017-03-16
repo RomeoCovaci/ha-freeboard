@@ -1873,17 +1873,16 @@ a:hover.text-button, a:focus.text-button {
 
 .calculated-setting-row {
 	clear: both;
-	height: 30px;
+	height: 80px;
 	margin-bottom: 5px;
 }
 
 textarea.calculated-value-input {
 	position: absolute;
 	width: 400px;
-	height: 20px;
+	height: 70px;
 	resize: none;
-	white-space: nowrap;
-	overflow: auto;
+	overflow: hidden;
 	Z-index: 3000;
 }
 
