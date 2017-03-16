@@ -5,6 +5,10 @@ This repository contains a clone of [freeboard](https://github.com/freeboard/fre
 
 To get started, just fire up a web browser in the root of this dir and open up index.html (or index-dev.html).  Add a Home Assistant datasource with appropriate Web Socket URI, then add some widgets.  Each entity will be available with its state as the data value.  Additionally, each entity's attributes are available with "_attrs" added to the entity name, so that the full attributes can be accessed in Freeboard.
 
+To auto-load a particular dashboard, save the json (e.g. to `dashbaord.json`) after configuring it, copy it to your web server, and then add `#source=dashboard.json` to the `index.html` URL.
+
+For developing custom widgets, a widget taht uses the Handlebars templating system is provided.  Also check out [freeboard-handlebars-widget](https://github.com/jritsema/freeboard-handlebars-widget) for a starter template for working on Handlebars-templated widgets.
+
 More to come soon.
 
 

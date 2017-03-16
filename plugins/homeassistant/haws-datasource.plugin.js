@@ -72,6 +72,14 @@
 	HAWS.createConnection(currentSettings.hass_ws_url, opts).then(function (conn) {
 	  self.conn = conn;
 
+          // save the connection for widgets to use
+          if (!("haws_connection" in window) || self.owns_global_connection) {
+            window["haws_connection"] = conn;
+            self.owns_global_connection = true;
+          } else {
+            console.log("Note: multiple Home Assistant connections are supported, but HA-specific widgets will only use the first");
+          }
+
           // start getting entities
           HAWS.subscribeEntities(conn, function(ents) {
             // if we need to transform the data we can do so here; but for now,
@@ -106,6 +114,9 @@
 	if (self.conn) {
 	  self.conn.close();
 	}
+        if (self.owns_global_connection) {
+          delete window["haws_connection"];
+        }
       }
 
       doConnection();

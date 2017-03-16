@@ -2199,7 +2199,6 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 	this.type = ko.observable();
 	this.type.subscribe(function (newValue) {
 		disposeWidgetInstance();
-
 		if ((newValue in widgetPlugins) && _.isFunction(widgetPlugins[newValue].newInstance)) {
 			var widgetType = widgetPlugins[newValue];
 
@@ -2215,7 +2214,8 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 			}
 
 			// Do we need to load any external scripts?
-			if (widgetType.external_scripts) {
+			if (widgetType.external_scripts &&
+                            widgetType.external_scripts.length > 0) {
 				head.js(widgetType.external_scripts.slice(0), finishLoad); // Need to clone the array because head.js adds some weird functions to it
 			}
 			else {

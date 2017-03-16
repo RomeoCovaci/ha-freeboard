@@ -1,3 +1,124 @@
+(function() {
+  freeboard.loadWidgetPlugin({
+    "type_name"   : "hass_service_call",
+    "display_name": "Home Assistant - Call Service",
+    "description" : "Call a Home Assistant service",
+    "external_scripts": [],
+    // if true, no padding will be placed around the widget
+    "fill_size" : false,
+    "settings"    : [
+      {
+        "name"        : "service_name",
+        "display_name": "Service to call on click",
+        "type"        : "calculated"
+      },
+      {
+        "name"        : "service_args",
+        "display_name": "Arguments (JSON)",
+        "type"        : "calculated"
+      },
+      {
+        "name"        : "size",
+        "display_name": "Size",
+        "type"        : "option",
+        "options"     : [
+          {
+            "name" : "Regular (32px)",
+            "value": "regular"
+          },
+          {
+            "name" : "Big (64px)",
+            "value": "big"
+          }
+        ]
+      },
+      {
+        "name"        : "button_title",
+        "display_name": "Button title (null if none)",
+        "type"        : "calculated"
+      },
+      {
+        "name"        : "button_icon",
+        "display_name": "Button icon image URL (null if none)",
+        "type"        : "calculated"
+      }
+    ],
+    // Same as with datasource plugin, but there is no updateCallback parameter in this case.
+    newInstance: function(settings, newInstanceCallback) {
+      newInstanceCallback(new HassServiceCallWidgetPlugin(settings));
+    }
+  });
+
+  var HassServiceCallWidgetPlugin = function(settings) {
+    var self = this;
+    var currentSettings = settings;
+
+    var element = $("<button><img><div><span></span></div></button>");
+    element.addClass("hass_button");
+    element.addClass("hass_button_small");
+    element.click(function() {
+      var svc = self.service_name;
+      var args = self.service_args;
+      if (!svc)
+        return;
+
+      if (!window.haws_connection) {
+        console.error("No Home Assistant connection for widget (make sure you have a HAWS datasource configured)!");
+        return;
+      }
+
+      var svc_domain = HAWS.extractDomain(svc);
+      var svc_name = HAWS.extractObjectId(svc);
+
+      window.haws_connection.callService(svc_domain, svc_name, args);
+    });
+
+    $('img', element).hide();
+    $('span', element).hide();
+
+    self.render = function(containerElement) {
+      $(containerElement).append(element);
+    }
+
+    // each block height unit is 45px
+    self.getHeight = function() {
+      if (currentSettings.size == "big") {
+        element.removeClass("hass_button_small").addClass("hass_button_big");
+        return 2;
+      }
+      element.removeClass("hass_button_big").addClass("hass_button_small");
+      return 1;
+    }
+
+    self.onSettingsChanged = function(newSettings) {
+      currentSettings = newSettings;
+    }
+
+    self.onCalculatedValueChanged = function(settingName, newValue) {
+      if (settingName == "button_title") {
+        if (newValue) {
+          $("span", element).text(newValue).show();
+        } else {
+          $("span", element).hide();
+        }
+      } else if (settingName == "button_icon") {
+        if (newValue) {
+          $("img", element).attr("src", newValue).show();
+        } else {
+          $("img", element).hide();
+        }
+      } else if (settingName == "service_name") {
+        self["service_name"] = newValue;
+      } else if (settingName == "service_args") {
+        self["service_args"] = newValue;
+      }
+    }
+
+    self.onDispose = function() {
+    }
+  };
+}());
+
 // Copyright (c) 2017 Vladimir Vukicevic
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -72,6 +193,14 @@
 	HAWS.createConnection(currentSettings.hass_ws_url, opts).then(function (conn) {
 	  self.conn = conn;
 
+          // save the connection for widgets to use
+          if (!("haws_connection" in window) || self.owns_global_connection) {
+            window["haws_connection"] = conn;
+            self.owns_global_connection = true;
+          } else {
+            console.log("Note: multiple Home Assistant connections are supported, but HA-specific widgets will only use the first");
+          }
+
           // start getting entities
           HAWS.subscribeEntities(conn, function(ents) {
             // if we need to transform the data we can do so here; but for now,
@@ -106,120 +235,11 @@
 	if (self.conn) {
 	  self.conn.close();
 	}
+        if (self.owns_global_connection) {
+          delete window["haws_connection"];
+        }
       }
 
       doConnection();
     }
-}());
-
-// Best to encapsulate your plugin in a closure, although not required.
-(function()
-{
-	// ## A Widget Plugin
-	//
-	// -------------------
-	// ### Widget Definition
-	//
-	// -------------------
-	// **freeboard.loadWidgetPlugin(definition)** tells freeboard that we are giving it a widget plugin. It expects an object with the following:
-	freeboard.loadWidgetPlugin({
-		// Same stuff here as with datasource plugin.
-		"type_name"   : "my_widget_plugin",
-		"display_name": "Widget Plugin Example",
-        "description" : "Some sort of description <strong>with optional html!</strong>",
-		// **external_scripts** : Any external scripts that should be loaded before the plugin instance is created.
-		"external_scripts": [
-			"http://mydomain.com/myscript1.js", "http://mydomain.com/myscript2.js"
-		],
-		// **fill_size** : If this is set to true, the widget will fill be allowed to fill the entire space given it, otherwise it will contain an automatic padding of around 10 pixels around it.
-		"fill_size" : false,
-		"settings"    : [
-			{
-				"name"        : "the_text",
-				"display_name": "Some Text",
-				// We'll use a calculated setting because we want what's displayed in this widget to be dynamic based on something changing (like a datasource).
-				"type"        : "calculated"
-			},
-			{
-				"name"        : "size",
-				"display_name": "Size",
-				"type"        : "option",
-				"options"     : [
-					{
-						"name" : "Regular",
-						"value": "regular"
-					},
-					{
-						"name" : "Big",
-						"value": "big"
-					}
-				]
-			}
-		],
-		// Same as with datasource plugin, but there is no updateCallback parameter in this case.
-		newInstance   : function(settings, newInstanceCallback)
-		{
-			newInstanceCallback(new myWidgetPlugin(settings));
-		}
-	});
-
-	// ### Widget Implementation
-	//
-	// -------------------
-	// Here we implement the actual widget plugin. We pass in the settings;
-	var myWidgetPlugin = function(settings)
-	{
-		var self = this;
-		var currentSettings = settings;
-
-		// Here we create an element to hold the text we're going to display. We're going to set the value displayed in it below.
-		var myTextElement = $("<span></span>");
-
-		// **render(containerElement)** (required) : A public function we must implement that will be called when freeboard wants us to render the contents of our widget. The container element is the DIV that will surround the widget.
-		self.render = function(containerElement)
-		{
-			// Here we append our text element to the widget container element.
-			$(containerElement).append(myTextElement);
-		}
-
-		// **getHeight()** (required) : A public function we must implement that will be called when freeboard wants to know how big we expect to be when we render, and returns a height. This function will be called any time a user updates their settings (including the first time they create the widget).
-		//
-		// Note here that the height is not in pixels, but in blocks. A block in freeboard is currently defined as a rectangle that is fixed at 300 pixels wide and around 45 pixels multiplied by the value you return here.
-		//
-		// Blocks of different sizes may be supported in the future.
-		self.getHeight = function()
-		{
-			if(currentSettings.size == "big")
-			{
-				return 2;
-			}
-			else
-			{
-				return 1;
-			}
-		}
-
-		// **onSettingsChanged(newSettings)** (required) : A public function we must implement that will be called when a user makes a change to the settings.
-		self.onSettingsChanged = function(newSettings)
-		{
-			// Normally we'd update our text element with the value we defined in the user settings above (the_text), but there is a special case for settings that are of type **"calculated"** -- see below.
-			currentSettings = newSettings;
-		}
-
-		// **onCalculatedValueChanged(settingName, newValue)** (required) : A public function we must implement that will be called when a calculated value changes. Since calculated values can change at any time (like when a datasource is updated) we handle them in a special callback function here.
-		self.onCalculatedValueChanged = function(settingName, newValue)
-		{
-			// Remember we defined "the_text" up above in our settings.
-			if(settingName == "the_text")
-			{
-				// Here we do the actual update of the value that's displayed in on the screen.
-				$(myTextElement).html(newValue);
-			}
-		}
-
-		// **onDispose()** (required) : Same as with datasource plugins.
-		self.onDispose = function()
-		{
-		}
-	}
 }());
